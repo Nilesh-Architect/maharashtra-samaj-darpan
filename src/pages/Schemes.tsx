@@ -26,9 +26,9 @@ const Schemes = () => {
       color: "text-blue-600",
       bg: "bg-blue-50",
       schemes: [
-        { name: "Pre-Matric Scholarship", eligibility: "Class 1-10 Students", path: "/schemes/scholarship/pre-matric" },
-        { name: "Post-Matric Scholarship", eligibility: "Class 11 & Above", path: "/schemes/scholarship/post-matric" },
-        { name: "National Fellowship", eligibility: "M.Phil & Ph.D Students", path: "/schemes/scholarship/fellowship" },
+        { name: "Pre-Matric Scholarship", eligibility: "Class 1-10 Students", path: "/schemes/pre-matric" },
+        { name: "Post-Matric Scholarship", eligibility: "Class 11 & Above", path: "/schemes/post-matric" },
+        { name: "National Fellowship", eligibility: "M.Phil & Ph.D Students", path: "/schemes/fellowship" },
       ]
     },
     {

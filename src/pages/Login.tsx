@@ -27,6 +27,11 @@ const Login = () => {
         description: `Welcome to your ${userType} dashboard`,
       });
       
+      // Set login flag in localStorage for citizen
+      if (userType === "citizen") {
+        localStorage.setItem("isLoggedIn", "true");
+      }
+      
       // Navigate to appropriate dashboard
       if (userType === "citizen") navigate("/dashboard/citizen");
       else if (userType === "officer") navigate("/dashboard/officer");

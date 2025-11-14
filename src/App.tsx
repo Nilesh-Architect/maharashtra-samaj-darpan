@@ -11,6 +11,7 @@ import Certificate from "./pages/Certificate";
 import Grievances from "./pages/Grievances";
 import Employment from "./pages/Employment";
 import CitizenDashboard from "./pages/dashboards/CitizenDashboard";
+import SchemeDetail from "./pages/SchemeDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/grievances" element={<Grievances />} />
           <Route path="/employment" element={<Employment />} />
           <Route path="/dashboard/citizen" element={<CitizenDashboard />} />
+          <Route path="/schemes/:schemeId" element={<SchemeDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

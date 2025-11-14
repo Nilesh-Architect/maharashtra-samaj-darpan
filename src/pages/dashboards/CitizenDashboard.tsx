@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,32 +15,78 @@ import {
   TrendingUp,
   Download,
   Eye,
+  Search,
+  Plus,
 } from "lucide-react";
 
 const CitizenDashboard = () => {
-  const [applications] = useState([
-    {
-      id: "APP2024001",
-      scheme: "Post-Matric Scholarship",
-      status: "approved",
-      appliedDate: "2024-01-15",
-      amount: "₹25,000",
-    },
-    {
-      id: "APP2024002",
-      scheme: "Self-Employment Scheme",
-      status: "pending",
-      appliedDate: "2024-02-01",
-      amount: "₹2,50,000",
-    },
-    {
-      id: "APP2024003",
-      scheme: "Assistive Devices",
-      status: "in-review",
-      appliedDate: "2024-01-20",
-      amount: "N/A",
-    },
-  ]);
+  const [applications, setApplications] = useState<Array<{
+    id: string;
+    scheme: string;
+    status: string;
+    appliedDate: string;
+    amount: string;
+  }>>([]);
+
+  useEffect(() => {
+    // Load applications from localStorage
+    const storedApplications = JSON.parse(localStorage.getItem("schemeApplications") || "[]");
+    
+    // Merge with default applications (for demo purposes)
+    const defaultApps = [
+      {
+        id: "APP2024001",
+        scheme: "Post-Matric Scholarship",
+        status: "approved",
+        appliedDate: "2024-01-15",
+        amount: "₹25,000",
+      },
+      {
+        id: "APP2024002",
+        scheme: "Self-Employment Scheme",
+        status: "pending",
+        appliedDate: "2024-02-01",
+        amount: "₹2,50,000",
+      },
+      {
+        id: "APP2024003",
+        scheme: "Assistive Devices",
+        status: "in-review",
+        appliedDate: "2024-01-20",
+        amount: "N/A",
+      },
+    ];
+
+    // Combine and format stored applications
+    const formattedStored = storedApplications.map((app: any) => ({
+      id: app.id,
+      scheme: app.scheme,
+      status: app.status,
+      appliedDate: app.appliedDate,
+      amount: app.amount,
+    }));
+
+    // Merge with defaults, avoiding duplicates
+    const allApps = [...defaultApps];
+    formattedStored.forEach((storedApp: any) => {
+      if (!allApps.find((app) => app.id === storedApp.id)) {
+        allApps.push(storedApp);
+      }
+    });
+
+    setApplications(allApps);
+  }, []);
+
+  // Calculate stats dynamically
+  const totalApplications = applications.length;
+  const approvedCount = applications.filter((app) => app.status === "approved").length;
+  const pendingCount = applications.filter((app) => app.status === "pending" || app.status === "in-review").length;
+  const benefitsReceived = applications
+    .filter((app) => app.status === "approved" && app.amount !== "N/A")
+    .reduce((sum, app) => {
+      const amount = parseInt(app.amount.replace(/[₹,]/g, "")) || 0;
+      return sum + amount;
+    }, 0);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -52,10 +99,10 @@ const CitizenDashboard = () => {
   };
 
   const stats = [
-    { label: "Total Applications", value: "3", icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Approved", value: "1", icon: CheckCircle, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Pending", value: "2", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
-    { label: "Benefits Received", value: "₹25,000", icon: Award, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Total Applications", value: String(totalApplications), icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Approved", value: String(approvedCount), icon: CheckCircle, color: "text-green-600", bg: "bg-green-50" },
+    { label: "Pending", value: String(pendingCount), icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
+    { label: "Benefits Received", value: `₹${benefitsReceived.toLocaleString("en-IN")}`, icon: Award, color: "text-purple-600", bg: "bg-purple-50" },
   ];
 
   return (
@@ -106,6 +153,7 @@ const CitizenDashboard = () => {
             <Tabs defaultValue="applications" className="w-full">
               <TabsList className="mb-6">
                 <TabsTrigger value="applications">My Applications</TabsTrigger>
+                <TabsTrigger value="browse-schemes">Browse Schemes</TabsTrigger>
                 <TabsTrigger value="profile">Profile</TabsTrigger>
                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
               </TabsList>
@@ -114,14 +162,36 @@ const CitizenDashboard = () => {
               <TabsContent value="applications">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Application Status</CardTitle>
-                    <CardDescription>
-                      Track all your scheme applications in one place
-                    </CardDescription>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Application Status</CardTitle>
+                        <CardDescription>
+                          Track all your scheme applications in one place
+                        </CardDescription>
+                      </div>
+                      <Link to="/schemes">
+                        <Button>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Apply for New Scheme
+                        </Button>
+                      </Link>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {applications.map((app) => {
+                    {applications.length === 0 ? (
+                      <div className="text-center py-8">
+                        <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-muted-foreground mb-4">No applications found</p>
+                        <Link to="/schemes">
+                          <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Apply for a Scheme
+                          </Button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {applications.map((app) => {
                         const statusInfo = getStatusBadge(app.status);
                         const StatusIcon = statusInfo.icon;
                         
@@ -166,6 +236,61 @@ const CitizenDashboard = () => {
                           </div>
                         );
                       })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Browse Schemes Tab */}
+              <TabsContent value="browse-schemes">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Browse Available Schemes</CardTitle>
+                    <CardDescription>
+                      Explore and apply for various welfare schemes available for persons with disabilities
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[
+                          { name: "Educational Schemes", count: 3, icon: FileText, path: "/schemes" },
+                          { name: "Employment & Skill Development", count: 3, icon: TrendingUp, path: "/schemes" },
+                          { name: "Assistive Devices & Aids", count: 3, icon: Award, path: "/schemes" },
+                          { name: "Social Security", count: 3, icon: CheckCircle, path: "/schemes" },
+                          { name: "MSHFDC Loans", count: 3, icon: FileText, path: "/schemes" },
+                          { name: "Sports & Recreation", count: 3, icon: Award, path: "/schemes" },
+                        ].map((category, index) => (
+                          <Link key={index} to={category.path}>
+                            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                              <CardContent className="pt-6">
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <category.icon className="h-5 w-5 text-primary" />
+                                  </div>
+                                  <div>
+                                    <h3 className="font-semibold">{category.name}</h3>
+                                    <p className="text-sm text-muted-foreground">{category.count} schemes available</p>
+                                  </div>
+                                </div>
+                                <Button variant="outline" className="w-full">
+                                  <Search className="h-4 w-4 mr-2" />
+                                  Browse Schemes
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="mt-6 text-center">
+                        <Link to="/schemes">
+                          <Button size="lg">
+                            <Search className="h-5 w-5 mr-2" />
+                            View All Schemes
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
